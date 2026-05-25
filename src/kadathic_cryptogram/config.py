@@ -30,6 +30,7 @@ class SolveConfig(BaseModel):
     max_retries: int = Field(default=3, ge=1, le=5)
     max_ciphertext_length: int = Field(default=2000, ge=50)
     min_ciphertext_length: int = Field(default=50, ge=10)
+    log_enabled: bool = False
 
 
 class FrontendConfig(BaseModel):

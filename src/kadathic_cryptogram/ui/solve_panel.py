@@ -137,6 +137,7 @@ async def _do_solve(
             cipher_registry=cipher_registry,
             agent_id=config.solve.agent_id,
             max_retries=config.solve.max_retries,
+            log_enabled=config.solve.log_enabled,
         )
 
         result = engine.solve(

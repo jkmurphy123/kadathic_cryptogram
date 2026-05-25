@@ -35,12 +35,20 @@ def main(argv: list[str] | None = None) -> None:
         default=False,
         help="Enable auto-reload for development",
     )
+    parser.add_argument(
+        "--log",
+        action="store_true",
+        default=False,
+        dest="log_enabled",
+        help="Log every solve attempt (prompt + LLM response) to solve_logs/",
+    )
     args = parser.parse_args(argv)
 
     from kadathic_cryptogram.app import create_app
     from kadathic_cryptogram.config import load_frontend_config
 
-    config = load_frontend_config(args.config) if args.config else None
+    config = load_frontend_config(args.config) if args.config else load_frontend_config()
+    config.solve.log_enabled = args.log_enabled or config.solve.log_enabled
     create_app(config=config)
 
     from nicegui import ui

@@ -60,6 +60,7 @@ class AgentFoundryClient:
             session_id=_generate_session_id(),
             user_id="local-user",
             user_message=user_message,
+            provider_id=provider_id,
             app_context=AppContext.simple(
                 app_id="kadathic_cryptogram",
                 app_type="cryptogram",
