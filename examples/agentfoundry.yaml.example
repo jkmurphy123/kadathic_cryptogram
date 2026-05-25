@@ -1,0 +1,25 @@
+# Example Agent Foundry project config for Kadathic Cryptogram.
+# Copy this to the project root and customize.
+
+project:
+  id: cryptogram_project
+  name: Kadathic Cryptogram
+
+agents:
+  libraries:
+    - ./agents
+
+providers:
+  # Use a mock provider for development (no API key needed).
+  # Replace with a real provider once the solver is wired up.
+  mock:
+    type: mock
+    model: mock-model
+
+  # deepseek:
+  #   type: deepseek
+  #   model: deepseek-chat
+  #   api_key: ${DEEPSEEK_API_KEY}
+
+context_policy:
+  max_recent_messages: 3

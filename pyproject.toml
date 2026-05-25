@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kadathic-cryptogram"
+version = "0.1.0"
+description = "Cipher/cryptogram puzzle generator and AI-powered solver using the Agent Foundry framework."
+requires-python = ">=3.11"
+dependencies = [
+    "nicegui>=3.0",
+    "pydantic>=2",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "ruff",
+]
+
+[project.scripts]
+kadathic-cryptogram = "kadathic_cryptogram.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
