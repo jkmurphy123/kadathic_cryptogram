@@ -1,0 +1,28 @@
+project:
+  id: cryptogram_project
+  name: Kadathic Cryptogram
+
+default_provider: mock
+
+providers:
+  mock:
+    type: mock
+    model: mock-model
+
+  deepseek:
+    type: deepseek
+    model: deepseek-chat
+
+agent_libraries:
+  - ./agents
+
+enabled_agents:
+  - cryptogram_solver
+
+storage:
+  path: .agentfoundry/agent_foundry.sqlite
+
+context_policy:
+  include_app_context: true
+  max_recent_messages: 3
+  app_context_position: before_user_message

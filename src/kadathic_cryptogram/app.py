@@ -20,7 +20,12 @@ def create_app(
     client = backend_client or _create_backend_client(active_config)
     state = _create_initial_state(active_config, client)
 
-    build_shell(config=active_config, state=state, cipher_registry=cipher_registry)
+    build_shell(
+        config=active_config,
+        state=state,
+        cipher_registry=cipher_registry,
+        client=client,
+    )
     return state
 
 
@@ -49,9 +54,16 @@ def _create_initial_state(
 
     try:
         providers = client.list_providers()
-        if providers and config.ui.default_provider_id is None:
-            state.selected_provider_id = providers[0].id
-            state.selected_model = providers[0].model
+        if providers:
+            if config.ui.default_provider_id is None:
+                state.selected_provider_id = providers[0].id
+                state.selected_model = providers[0].model
+            else:
+                # Look up model for the configured provider
+                for p in providers:
+                    if p.id == state.selected_provider_id:
+                        state.selected_model = p.model
+                        break
     except Exception:
         pass
 

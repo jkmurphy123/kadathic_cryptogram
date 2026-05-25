@@ -2,6 +2,7 @@
 
 from nicegui import ui
 
+from kadathic_cryptogram.backend.client import AgentFoundryClient, FakeAgentFoundryClient
 from kadathic_cryptogram.ciphers.registry import CipherRegistry
 from kadathic_cryptogram.config import FrontendConfig
 from kadathic_cryptogram.state.app_state import AppMode, CryptogramUiState
@@ -17,6 +18,7 @@ def build_shell(
     config: FrontendConfig,
     state: CryptogramUiState,
     cipher_registry: CipherRegistry,
+    client: AgentFoundryClient | FakeAgentFoundryClient,
 ) -> None:
     """Build the cryptogram app shell with 4-panel layout."""
 
@@ -32,16 +34,13 @@ def build_shell(
     """)
 
     with ui.column().classes("af-shell w-full h-screen no-wrap gap-0"):
-        build_top_bar(config=config, state=state, cipher_registry=cipher_registry)
+        build_top_bar(config=config, state=state, cipher_registry=cipher_registry, client=client)
 
         with ui.row().classes("w-full grow gap-0"):
-            # Left: mode panel (fixed width)
             with ui.column().classes("w-40 bg-white border-r p-4 gap-3"):
                 build_mode_panel(state=state)
 
-            # Right: main panel (grows)
             with ui.column().classes("grow p-4 gap-3 overflow-auto"):
-                # Generate panel
                 gen_col = ui.column().classes("w-full gap-3")
                 with gen_col:
                     build_generate_panel(
@@ -50,20 +49,18 @@ def build_shell(
                         cipher_registry=cipher_registry,
                     )
 
-                # Solve panel
                 solve_col = ui.column().classes("w-full gap-3")
                 with solve_col:
                     build_solve_panel(
                         config=config,
                         state=state,
                         cipher_registry=cipher_registry,
+                        client=client,
                     )
 
-                # Store containers on state so mode_panel can toggle them
                 state._gen_container = gen_col
                 state._solve_container = solve_col
 
-                # Initial visibility
                 gen_col.set_visibility(state.active_mode == AppMode.GENERATE)
                 solve_col.set_visibility(state.active_mode == AppMode.SOLVE)
 

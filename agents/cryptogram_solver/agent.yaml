@@ -1,0 +1,10 @@
+id: cryptogram_solver
+name: Cryptogram Solver
+version: 0.1.0
+description: Solves simple substitution cipher cryptograms using frequency analysis and pattern matching.
+personality_file: personality.md
+temperature: 0.2
+memory:
+  enabled: false
+context_policy:
+  include_app_context: true

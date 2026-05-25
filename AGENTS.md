@@ -76,15 +76,27 @@ kadathic_cryptogram/
    - Derivable key forms a consistent bijection
 
 ---
-
 ## Running
 
 ```bash
-pip install -e .
-kadathic-cryptogram --host 127.0.0.1 --port 8080
-# or
-python -m kadathic_cryptogram
+cd /home/ubuntu/ai_projects/kadathic_cryptogram
+.venv/bin/python -m kadathic_cryptogram --host 127.0.0.1 --port 8080
 ```
+
+### Real LLM Solving
+
+For AI-powered solving with real LLMs, set your API key and switch the default
+provider in `agentfoundry.yaml`:
+
+```bash
+export DEEPSEEK_API_KEY=sk-your-key-here
+```
+
+Then change `default_provider: mock` to `default_provider: deepseek` in
+`agentfoundry.yaml`.
+
+Without an API key, the app falls back to a mock client that returns canned
+responses (useful for UI development but won't actually crack ciphers).
 
 ---
 
