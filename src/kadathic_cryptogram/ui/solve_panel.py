@@ -140,10 +140,20 @@ async def _do_solve(
             log_enabled=config.solve.log_enabled,
         )
 
+        # Detect app-generated ciphertext so we can give calibrated hints
+        known_plaintext: str | None = None
+        if (
+            state.plaintext_input
+            and state.ciphertext_output
+            and state.ciphertext_input.strip() == state.ciphertext_output.strip()
+        ):
+            known_plaintext = state.plaintext_input
+
         result = engine.solve(
             text,
             state.selected_cipher,
             provider_id=state.selected_provider_id,
+            known_plaintext=known_plaintext,
         )
 
         state.plaintext_output = result.plaintext

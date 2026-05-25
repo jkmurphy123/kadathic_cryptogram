@@ -141,6 +141,130 @@ Ciphertext:
 
 Return ONLY the decrypted plaintext. No explanation, no commentary."""
 
+    def build_hint_prompt(
+        self, ciphertext: str, candidate: str, known_plaintext: str
+    ) -> str:
+        """Build a prompt showing which parts of the LLM's attempt are correct.
+
+        Includes a positional mask (correct letters stay, wrong become dashes),
+        a stacked ciphertext-above-mask view for column-by-column reading,
+        and the verified cipher→plain mappings the LLM got right.
+        """
+
+        # --- 1. Positional mask ---
+        min_len = min(len(candidate), len(known_plaintext))
+        mask_chars: list[str] = []
+        correct_count = 0
+        total_alpha = 0
+
+        for i in range(min_len):
+            c = candidate[i]
+            k = known_plaintext[i]
+            if c in (" ", ".", ",", "!", "?", ";", ":", "-", "'", '"'):
+                mask_chars.append(c)
+            elif c.upper() == k.upper():
+                mask_chars.append(c)
+                if c.isalpha():
+                    correct_count += 1
+            else:
+                mask_chars.append("-")
+
+        # Count total alphabetic positions for percentage
+        total_alpha = sum(1 for i in range(min_len) if known_plaintext[i].isalpha())
+
+        if len(candidate) > min_len:
+            mask_chars.append("…")
+        masked = "".join(mask_chars)
+
+        # --- 2. Stacked ciphertext / mask view ---
+        ciph_chars: list[str] = []
+        mask_row: list[str] = []
+
+        for i in range(min_len):
+            cc = ciphertext[i] if i < len(ciphertext) else " "
+            mc = mask_chars[i] if i < len(mask_chars) else " "
+
+            # Keep columns aligned: pad shorter strings with spaces
+            ciph_chars.append(cc)
+            mask_row.append(mc)
+
+        # Break into lines of ~60 chars for readability
+        stacked_lines: list[str] = []
+        columns_per_line = 60
+        for start in range(0, min_len, columns_per_line):
+            end = min(start + columns_per_line, min_len)
+            stacked_lines.append(
+                "Cipher:  " + " ".join(ciph_chars[start:end])
+            )
+            stacked_lines.append(
+                "Plain:   " + " ".join(mask_row[start:end])
+            )
+            stacked_lines.append("")
+
+        # --- 3. Verified mappings ---
+        cipher_upper = ciphertext.upper()
+        known_upper = known_plaintext.upper()
+        candidate_upper = candidate.upper()
+
+        verified: dict[str, str] = {}  # cipher_char → plaintext_char
+        for i in range(min_len):
+            cc = cipher_upper[i] if i < len(cipher_upper) else ""
+            ca = candidate_upper[i] if i < len(candidate_upper) else ""
+            kn = known_upper[i] if i < len(known_upper) else ""
+
+            if cc.isalpha() and ca == kn and ca.isalpha():
+                verified[cc] = kn
+
+        mapping_lines: list[str] = []
+        if verified:
+            for cipher_ch in sorted(verified):
+                mapping_lines.append(
+                    f"  {cipher_ch} → {verified[cipher_ch]}"
+                )
+
+        # --- 4. Build the prompt ---
+        pct = round(correct_count / max(total_alpha, 1) * 100)
+        parts: list[str] = []
+
+        parts.append(
+            f"Your previous attempt got {correct_count} of "
+            f"{total_alpha} letters correct ({pct}%). "
+            "Here is your progress:"
+        )
+        parts.append("")
+
+        parts.append(
+            "The ciphertext and your partial plaintext are stacked below — "
+            "read column-by-column to see each cipher→plain pair:"
+        )
+        parts.extend(stacked_lines)
+
+        parts.append("VERIFIED MAPPINGS — these are correct everywhere:")
+        if mapping_lines:
+            parts.extend(mapping_lines)
+            parts.append("")
+            parts.append(
+                f"Each mapping above applies to EVERY occurrence of that "
+                f"cipher letter in the text."
+            )
+        else:
+            parts.append("  (none verified yet)")
+            parts.append("")
+
+        parts.append(
+            "CORRECT LETTERS SHOWN; INCORRECT REPLACED WITH '-':"
+        )
+        parts.append(masked)
+        parts.append("")
+
+        parts.append(
+            "Use the correct letters and verified mappings as anchors. "
+            "Deduce the remaining dashes using partial words as clues. "
+            "Return ONLY the complete decrypted plaintext. No explanation."
+        )
+
+        return "\n".join(parts)
+
     def derive_key(self, ciphertext: str, plaintext: str) -> str:
         """Derive the substitution key from ciphertext→plaintext mapping."""
         cipher_upper = ciphertext.upper()

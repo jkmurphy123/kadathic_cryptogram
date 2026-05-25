@@ -55,6 +55,17 @@ class CipherProtocol(Protocol):
         """Return a stronger follow-up prompt when first attempt fails."""
         ...
 
+    def build_hint_prompt(
+        self, ciphertext: str, candidate: str, known_plaintext: str
+    ) -> str:
+        """Return a prompt showing which parts of *candidate* are correct.
+
+        Used when the app generated the ciphertext and knows the answer.
+        Shows a positional mask (correct letters stay, wrong become dashes)
+        and, where applicable, verified cipher→plain mappings the LLM got right.
+        """
+        ...
+
     def derive_key(self, ciphertext: str, plaintext: str) -> str:
         """Derive the key mapping from ciphertext→plaintext (for display)."""
         ...
